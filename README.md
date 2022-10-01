@@ -1,3 +1,3 @@
 # movies-explorer-api
 
-dolgodvorovl.nomoredomains.icu - домен для диплома
+https://api.dolgodvorovl.nomoredomains.icu 

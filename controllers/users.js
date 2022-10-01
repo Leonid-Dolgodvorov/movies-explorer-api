@@ -1,3 +1,4 @@
+require('dotenv').config();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
@@ -5,7 +6,6 @@ const { NotFoundError } = require('../errors/NotFoundError');
 const { NotValidDataError } = require('../errors/NotValidDataError');
 const { ConflictError } = require('../errors/ConflictError');
 const { UnauthorizedError } = require('../errors/UnauthorizedError');
-require('dotenv').config();
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 
@@ -59,6 +59,8 @@ const updateProfile = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new NotValidDataError('Ошибка обновления данных пользователя: переданы некорректные данные'));
+      } else if (err.code === 11000) {
+        next(new ConflictError('Ошибка обновления данных пользователя: пользователь с данным email существует'));
       } else {
         next(err);
       }
@@ -69,6 +71,9 @@ const login = (req, res, next) => {
   const { email, password } = req.body;
   return User.findUserByCredentials(email, password)
     .then((user) => {
+      if (!user) {
+        throw new UnauthorizedError('Ошибка авторизации');
+      }
       const token = jwt.sign(
         { _id: user._id },
         NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
@@ -78,9 +83,7 @@ const login = (req, res, next) => {
       );
       res.send({ token });
     })
-    .catch(() => {
-      next(new UnauthorizedError('Ошибка авторизации'));
-    });
+    .catch(next);
 };
 
 module.exports = {

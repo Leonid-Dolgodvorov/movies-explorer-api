@@ -1,43 +1,14 @@
 const Movie = require('../models/movie');
 const { NotFoundError } = require('../errors/NotFoundError');
 const { NotValidDataError } = require('../errors/NotValidDataError');
-const { ConflictError } = require('../errors/ConflictError');
 const { ForbiddenError } = require('../errors/ForbiddenError');
 
 const createMovie = (req, res, next) => {
-  const {
-    country,
-    director,
-    duration,
-    year,
-    description,
-    image,
-    trailerLink,
-    thumbnail,
-    movieId,
-    nameRU,
-    nameEN,
-  } = req.body;
-  Movie.create({
-    country,
-    director,
-    duration,
-    year,
-    description,
-    image,
-    trailerLink,
-    thumbnail,
-    owner: req.user._id,
-    movieId,
-    nameRU,
-    nameEN,
-  })
+  Movie.create({ ...req.body, owner: req.user._id })
     .then((movie) => res.status(201).send({ data: movie }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new NotValidDataError('Ошибка создания карточки фильма: переданы некорректные данные'));
-      } else if (err.code === 11000) {
-        next(new ConflictError('Ошибка создания фильма: фильм уже существует'));
       } else {
         next(err);
       }
@@ -53,8 +24,8 @@ const deleteMovie = (req, res, next) => {
         next(new ForbiddenError('Ошибка: невозможно удалить фильм из чужого избранного'));
       } else {
         Movie.findByIdAndRemove(movieId)
-          .then(() => {
-            res.send({ message: 'Фильм удален из избранного' });
+          .then((film) => {
+            res.send({ message: `Фильм '${film.nameRU}' удален из избранного` });
           })
           .catch(next);
       }

@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
-const isEmail = require('validator/lib/isEmail');
+const { validateEmail } = require('../middlewares/validation');
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -13,16 +13,12 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Ошибка: добавьте email'],
     unique: true,
-    validate: {
-      validator: (input) => isEmail(input),
-      message: 'Неправильный формат почты',
-    },
+    validate: validateEmail,
   },
   password: {
     type: String,
     required: [true, 'Ошибка: добавьте пароль, минимум 5 знаков'],
     select: false,
-    minlength: 5,
   },
 });
 
