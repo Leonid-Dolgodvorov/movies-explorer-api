@@ -56,10 +56,12 @@ const userSchema = new mongoose.Schema({
   },
   nameRU: {
     type: String,
+    minlength: 2,
     required: [true, 'Ошибка: добавьте название фильма на русском языке'],
   },
   nameEN: {
     type: String,
+    minlength: 2,
     required: [true, 'Ошибка: добавьте название фильма на английском языке'],
   },
 });
